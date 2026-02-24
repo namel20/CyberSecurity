@@ -1,61 +1,63 @@
-## Task 1 — System Definition and Architecture (Healthcare Appointment System)
+## Task 1 — System Definition and Architecture
 
-This task defines the high-level architecture for a healthcare appointment platform, including its main components, users/roles, and explicit trust boundaries that will be used later for threat modeling.
+### Healthcare Appointment System
 
-### 1. Application components
+This task defines the high-level architecture of a healthcare appointment platform, including core components, user roles, and trust boundaries used for later threat modeling.
+
+### 1. Application Components
 
 - **Frontend (Portals)**
-  - **Patient Portal (Web/Mobile)**: Signup/login, manage profile, search for doctors, book/reschedule/cancel appointments, view upcoming/past visits, view basic messages/notifications, and optionally handle payments for consultations.
-  - **Doctor Portal (Web)**: Login, manage availability (working hours, time-off), review and confirm/decline appointment requests, view patient details for their own appointments only (minimum necessary PHI), record brief notes if in scope, and exchange messages with patients or staff.
-  - **Hospital/Healthcare Staff Portal (Web)**: Used by receptionists/schedulers to manage doctors, departments, clinic schedules, waiting lists, and resource allocation (rooms, equipment). Allows creating/editing appointments on behalf of patients and running operational reports.
-  - **Admin Console (Web)**: Platform administration for one or more hospitals/tenants, global configuration, user and role management, security settings (e.g., MFA policies), and review of audit logs and compliance reports.
+  - **Patient Portal (Web/Mobile)**: Register/login, manage profile, search doctors, book/reschedule/cancel appointments, view visit history, receive notifications, and optionally handle payments.
+  - **Doctor Portal (Web)**: Manage availability, review appointments, access patient details for assigned visits only (minimum necessary PHI), and record limited notes.
+  - **Hospital Staff Portal (Web)**: Manage clinic schedules, resources, and appointments on behalf of patients; run operational reports.
+  - **Admin Console (Web)**: Platform configuration, role management, security policy management (e.g., MFA), and audit log review.
 
-- **Backend services (API layer)**
-  - **Perimeter / Edge (WAF/CDN/DDoS protection)**: Terminates TLS, filters malicious traffic (OWASP Top 10, bots), protects against volumetric attacks, and optionally serves static assets via CDN.
-  - **API Gateway / Backend-for-Frontend (BFF)**: Single entry point for patient/doctor/staff/admin portals. Enforces request validation, rate limiting, authentication/authorization checks for incoming API calls, and routes traffic to internal microservices or modular services.
-  - **Auth & Identity Service**: Handles user registration (where allowed), login, MFA, password resets, token/session issuance, and revocation. Manages identity lifecycle for patients, doctors, staff, and admins.
-  - **User/Profile Service**: Stores and manages patient and doctor demographic information, contact details, preferences, and linkage to external identifiers (e.g., hospital MRN) where needed.
-  - **Availability/Scheduling Service**: Maintains doctor calendars, clinic working hours, time-off, and capacity constraints. Exposes APIs to compute available slots per doctor, location, or specialty.
-  - **Appointment Service**: Implements booking logic, conflict checks, double-booking prevention, rescheduling and cancellation rules, and appointment state transitions (requested, confirmed, cancelled, no-show, completed).
-  - **Notification Service**: Sends appointment confirmations, reminders, and updates via email/SMS/WhatsApp/push, using templates and localization. Integrates with external providers but centralizes business rules and throttling.
-  - **Billing/Payments Service (optional)**: Manages invoices, payment intents, refunds, and reconciliation for paid consultations or telehealth services. Integrates with external payment gateways where required.
-  - **Audit Logging Service**: Captures security- and privacy-relevant events (logins, failed logins, role changes, data access to PHI, appointment changes, admin actions) and forwards them to an immutable log store/SIEM.
-  - **Integration Service**: Provides connectors to external hospital systems such as EHR/HIS, lab systems, and insurance platforms for syncing patient/doctor identifiers, encounter data, and coverage information.
+- **Backend Services (API Layer)**
+  - **WAF/CDN/DDoS Protection**: Filters malicious traffic and protects against common web attacks.
+  - **API Gateway / BFF**: Single entry point enforcing validation, rate limiting, authentication, and routing to backend services.
+  - **Auth & Identity Service**: Handles login, MFA, token issuance, password reset, and identity lifecycle.
+  - **User/Profile Service**: Manages patient and doctor demographic information.
+  - **Scheduling Service**: Maintains doctor calendars and available slots.
+  - **Appointment Service**: Handles booking logic, conflict checks, and appointment state transitions.
+  - **Notification Service**: Sends reminders and confirmations via external providers.
+  - **Billing/Payments Service (Optional)**: Manages payment processing via third-party gateways.
+  - **Audit Logging Service**: Captures security-relevant events and forwards them to centralized logging.
+  - **Integration Service**: Connects to external EHR/HIS and other healthcare systems.
 
-- **Data storage**
-  - **Primary Relational Database**: Stores core transactional entities including users, roles, sessions/tokens metadata, doctor schedules, appointment records, notification status, and (optionally) billing records. Enforces referential integrity and fine-grained access controls.
-  - **Secure Object Storage**: Holds documents and attachments such as prescriptions, referrals, lab reports, or uploaded patient documents, subject to least-privilege access and strong encryption controls.
-  - **Cache (optional)**: Used for short-lived data like session state, rate-limit counters, frequently queried lookups (e.g., specialties, locations), and computed availability results to improve performance without relaxing authorization checks.
-  - **Log Store / SIEM**: Central destination for audit logs, application logs, WAF/CDN logs, and security events, supporting alerting, forensics, and compliance reporting.
+- **Data Storage**
+  - **Primary Relational Database**: Stores users, roles, schedules, appointments, and billing records.
+  - **Secure Object Storage**: Stores documents such as reports and prescriptions.
+  - **Cache (Optional)**: Improves performance for short-lived or frequently accessed data.
+  - **Log Store / SIEM**: Centralized logging for security monitoring and compliance.
 
-### 2. Users and roles
+### 2. Users and Roles
 
-- **External users**
-  - **Patient**: Registers/logs in, manages own profile, searches for doctors/clinics, books and manages their own appointments, views their own history and messages, and may upload limited medical or identity documents if allowed.
-  - **Doctor**: Logs in to manage availability and clinic schedules, reviews and manages assigned appointments, views patient information strictly for their scheduled encounters, and records basic visit notes where in scope.
-  - **Hospital Staff (Receptionist/Scheduler)**: Operates the staff portal to create, modify, or cancel appointments on behalf of patients, manage clinic calendars and resources, handle walk-ins and waitlists, and assist with communications.
-  - **System Integrations (Service Accounts)**: Non-human identities used by external systems (EHR/HIS, labs, insurance, notification providers, payment gateways) to call integration APIs or receive webhooks, scoped by least privilege.
+- **External Users**
+  - **Patient**: Books and manages personal appointments.
+  - **Doctor**: Manages availability and assigned appointments.
+  - **Hospital Staff**: Schedules and manages appointments operationally.
+  - **Service Accounts**: Used by external systems (EHR, payment, SMS) with least privilege.
 
-- **Internal privileged users**
-  - **Admin (Platform Admin)**: Configures tenants/hospitals, manages user accounts and roles, defines security policies (e.g., password/MFA rules), manages integrations and feature flags, and has access to platform-wide configuration and monitoring views.
-  - **Security/Compliance Officer (optional)**: Read-only access to detailed audit trails, security dashboards, and compliance reports, but not to modify operational data or bypass business rules.
+- **Internal Privileged Users**
+  - **Admin**: Manages platform configuration, users, roles, and security settings.
+  - **Security/Compliance Officer (Optional)**: Read-only access to audit logs and compliance data.
 
-### 3. Trust boundaries
+### 3. Trust Boundaries
 
-- **TB1 — Public Internet Boundary (User Devices → WAF/CDN)**  
-  Untrusted patient/doctor/staff/admin devices communicate with the platform over the internet. Controls focus on TLS everywhere, HSTS, bot detection, basic input filtering, and protecting against eavesdropping, credential stuffing, phishing-driven login attempts, and generic injection attacks.
+- **TB1 — Public Internet Boundary**  
+  User devices communicate with the platform through the internet. Controls focus on TLS, input validation, bot protection, and preventing credential abuse.
 
-- **TB2 — Perimeter to Application Boundary (WAF/API Gateway → Backend Services)**  
-  Traffic that passes the edge is forwarded to the API Gateway/BFF and then to internal services. Controls include strict authentication and authorization at the gateway, schema validation, rate limiting and throttling, replay protection for tokens, and segregation of public vs. privileged/admin APIs to limit abuse of backend services.
+- **TB2 — Perimeter to Application Boundary**  
+  Traffic flows from WAF/API Gateway to backend services. Controls include strict authentication, authorization, rate limiting, and API segregation.
 
-- **TB3 — Service-to-Data Boundary (Backend Services → Datastores)**  
-  Backend services access sensitive datastores such as the primary DB, secure object storage, cache, and log store. Controls include network segmentation, strong IAM/service identities, least-privilege data access policies, encryption in transit and at rest, query parameterization to prevent injection, and detailed logging and monitoring of PHI access.
+- **TB3 — Service-to-Data Boundary**  
+  Backend services access databases and storage. Controls include network isolation, encryption in transit and at rest, least-privilege access, and monitoring of PHI access.
 
-- **TB4 — Internal Privileged Access Boundary (Admin/Staff Tools → High-Risk Operations)**  
-  Admin Console and high-privilege staff interfaces form a distinct boundary because compromise here can impact many patients and providers. Controls emphasize strong MFA, device/posture checks where possible, fine-grained RBAC, just-in-time or least-privilege access, step-up authentication for sensitive actions (e.g., deleting data, changing security settings), and comprehensive, immutable audit logging.
+- **TB4 — Internal Privileged Access Boundary**  
+  Admin and high-privilege interfaces are isolated. Strong MFA, fine-grained RBAC, and immutable audit logging are enforced.
 
-- **TB5 — Third-Party / External Integration Boundary (Platform Services → External Providers)**  
-  Integration, Notification, and Billing/Payment services communicate with external providers (EHR/HIS, SMS/email gateways, payment processors). Controls include secure API key and secret management, network egress restrictions, strict data minimization (sharing only necessary PHI), webhook signature verification and anti-replay mechanisms, validation of inbound data, and monitoring for anomalous or failed integrations.
+- **TB5 — Third-Party Integration Boundary**  
+  External integrations (EHR, payment, SMS) are controlled through secure API keys, data minimization, webhook validation, and monitoring.
 
 ### 4. Architecture diagram
 
