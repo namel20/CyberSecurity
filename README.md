@@ -152,7 +152,7 @@ The DFD and trust boundaries are shown in the following diagram:
 | T17       | SMS Provider spoofing causes fake notifications                               | Spoofing               | Notification Service              | User confusion / phishing risk            | Medium     | Operational + reputational risk                     |
 | T18       | Admin privilege escalation from hospital staff role                           | Elevation of Privilege | Authorization Logic               | Full admin-level access                   | High       | Compromises system governance                       |
 
-These threats collectively cover the required areas (authentication, authorization, data storage, API communication, logging/monitoring, and administrative access) with clear components, impacts, and risk levels.
+
 
 ## Task 4 – Security Controls and Architecture Hardening
 
