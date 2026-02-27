@@ -10,7 +10,7 @@ This task defines the high-level architecture of a healthcare appointment platfo
   - **Patient Portal (Web/Mobile)**: Register/login, manage profile, search doctors, book/reschedule/cancel appointments, view visit history, receive notifications, and optionally handle payments.
   - **Doctor Portal (Web)**: Manage availability, review appointments, access patient details for assigned visits only (minimum necessary PHI), and record limited notes.
   - **Hospital Staff Portal (Web)**: Manage clinic schedules, resources, and appointments on behalf of patients; run operational reports.
-  - **Admin Console (Web)**: Platform configuration, role management, security policy management (e.g., MFA), and audit log review.
+  - **Admin Console (Web)**: Platform configuration, role management, security policy management (e.g., MFA- multifactor authentication), and audit log review.
 
 - **Backend Services (API Layer)**
   - **WAF/CDN/DDoS Protection**: Filters malicious traffic and protects against common web attacks.
@@ -20,9 +20,9 @@ This task defines the high-level architecture of a healthcare appointment platfo
   - **Scheduling Service**: Maintains doctor calendars and available slots.
   - **Appointment Service**: Handles booking logic, conflict checks, and appointment state transitions.
   - **Notification Service**: Sends reminders and confirmations via external providers.
-  - **Billing/Payments Service (Optional)**: Manages payment processing via third-party gateways.
+  - **Billing/Payments Service (Optional- Available in some)**: Manages payment processing via third-party gateways.
   - **Audit Logging Service**: Captures security-relevant events and forwards them to centralized logging.
-  - **Integration Service**: Connects to external EHR/HIS and other healthcare systems.
+  - **Integration Service**: Connects to external EHR (Electronic Health Records) and other healthcare systems.
 
 - **Data Storage**
   - **Primary Relational Database**: Stores users, roles, schedules, appointments, and billing records.
@@ -74,7 +74,7 @@ This task identifies key assets in the Healthcare Appointment System and maps th
 | Asset ID | Asset Name                 | Description                                                       | Asset Type           | Sensitivity Level |
 |---------:|---------------------------|-------------------------------------------------------------------|----------------------|-------------------|
 | A1       | User Credentials          | Password hashes, MFA secrets, session and refresh tokens          | Security             | Critical          |
-| A2       | Patient Personal Data     | Name, national ID/passport, DOB, gender, contact details          | Personal (PII)       | Critical          |
+| A2       | Patient Personal Data     | Name, national ID/passport, DOB, gender, contact details          | Personal             | Critical          |
 | A3       | Medical/Health Data       | Appointment reason, symptoms, prescriptions, reports              | PHI                  | Critical          |
 | A4       | Appointment Records       | Date, doctor, clinic, status, booking metadata                    | Operational + PHI    | High              |
 | A5       | Doctor Data               | Professional details, availability schedule                       | Personal/Operational | High              |
@@ -84,7 +84,9 @@ This task identifies key assets in the Healthcare Appointment System and maps th
 | A9       | Audit Logs                | Records of access, changes, and admin activity                    | Compliance/Security  | Critical          |
 | A10      | Database                  | Primary relational database storing system data                   | Infrastructure       | Critical          |
 | A11      | Object Storage            | Uploaded documents (reports, referrals, attachments)              | PHI Storage          | Critical          |
-| A12      | Admin Accounts            | Platform administrator identities and privileges                   | Security             | Critical          |
+| A12      | Admin Accounts            | Platform administrator identities and privileges                  | Security             | Critical          |
+
+*PHI: Protected Health Information 
 
 ### 2. Security objectives
 
@@ -93,7 +95,7 @@ The system focuses on four main security objectives:
 - **Confidentiality**: Only authorized people and services can view sensitive healthcare, identity, and financial data.
 - **Integrity**: Medical data, schedules, billing information, and audit logs cannot be changed without proper authorization.
 - **Availability**: Portals and APIs must be reliably available so patients and staff can book and manage care.
-- **Accountability**: All important actions are traceable to authenticated identities via tamper-resistant audit logs and RBAC.
+- **Accountability**: All important actions are traceable to authenticated identities via tamper-resistant audit logs and RBAC(Role-based access control ).
 
 ### 3. Asset–objective mapping
 
@@ -163,7 +165,7 @@ This task documents the key security controls added to mitigate the highest-valu
 ### 1. Control categories (short justification)
 
 1. **Identity and Access Management (IAM)**  
-   Centralized authentication via an Auth Service using token-based authentication (e.g., JWT) and **RBAC**. **MFA is enforced for administrative accounts** to reduce account compromise and privilege escalation.
+   Centralized authentication via an Auth Service using token-based authentication and **RBAC**. **MFA is enforced for administrative accounts** to reduce account compromise and privilege escalation.
 
 2. **Network Segmentation**  
    The architecture is separated into **Public Zone**, **Application Private Zone**, and an isolated **Secure Data Zone**. Only the **API Gateway** is internet-facing; backend services and datastores remain private to reduce attack surface and prevent direct database exposure.
@@ -191,7 +193,7 @@ Added:
 - Centralized Audit Logging
 - Defense-in-depth layers
 
-### 3. Why this architecture is strong
+### 3. Why this architecture is stronger
 
 - Defense-in-depth (multiple protection layers)
 - Trust boundary enforcement
@@ -235,7 +237,7 @@ Following structured threat modeling and secure architecture design, each **High
 | T17       | SMS provider spoofing               | Medium      | Transfer           | Signed webhook validation                           | Low                                          |
 | T18       | Staff privilege escalation to admin | High        | Mitigate           | RBAC, separation of duties, audit monitoring        | Low–Medium                                   |
 
-### 3. Residual risk explanation (brief)
+### 3. Residual risk explanation
 
 Even with defense-in-depth controls, some residual risks remain:
 
