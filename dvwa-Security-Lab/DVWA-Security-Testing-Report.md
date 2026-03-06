@@ -845,10 +845,9 @@ This showed two active containers:
 * **dvwa** – running the vulnerable web application
 * **nginx-dvwa** – acting as the reverse proxy
 
-### Screenshot Placeholder
 
 ```
-![Docker Containers Running](docker_ps.png)
+![Docker Containers Running](screenshots/docker_ps.png)
 ```
 
 ---
@@ -863,10 +862,8 @@ http://localhost
 
 This request was received by Nginx and forwarded to the DVWA container.
 
-### Screenshot Placeholder
-
 ```
-![DVWA HTTP Login Page](dvwa_http.png)
+![DVWA HTTP Login Page](screenshots/dvwa_http.png)
 ```
 
 ---
@@ -881,14 +878,13 @@ https://localhost
 
 Because a **self-signed certificate** was used, the browser displayed a warning indicating that the certificate authority is not trusted. After proceeding past the warning, the DVWA login page loaded successfully over an encrypted connection.
 
-### Screenshot Placeholder
 
 ```
-![HTTPS Certificate Warning](https_warning.png)
+![HTTPS Certificate Warning](screenshots/https_warning.png)
 ```
 
 ```
-![DVWA HTTPS Login Page](dvwa_https.png)
+![DVWA HTTPS Login Page](screenshots/dvwa_https.png)
 ```
 
 ---
