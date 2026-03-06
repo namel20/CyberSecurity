@@ -899,9 +899,7 @@ This showed two active containers:
 * **nginx-dvwa** – acting as the reverse proxy
 
 
-```
 ![Docker Containers Running](screenshots/docker_ps.png)
-```
 
 ---
 
@@ -916,7 +914,7 @@ http://localhost
 This request was received by Nginx and forwarded to the DVWA container.
 
 
-![DVWA HTTP Login Page](screenshots/dvwa_http.png)
+- ![DVWA HTTPS Login Page](screenshots/dvwa_https.png)
 ---
 
 ## 6. Accessing DVWA via HTTPS
@@ -931,7 +929,6 @@ Because a **self-signed certificate** was used, the browser displayed a warning 
 
 
 - ![HTTPS Certificate Warning](screenshots/https_warning.png)
-
 - ![DVWA HTTPS Login Page](screenshots/dvwa_https.png)
 
 
