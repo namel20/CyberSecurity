@@ -749,6 +749,166 @@ Using OWASP Top 10:
 | Insecure CAPTCHA | **A07** | Identification and Authentication Failures |
 | Brute Force | **A07** | Identification and Authentication Failures |
 
+Below is a **clean Markdown answer** you can paste directly into your `.md` file. I included **placeholders for your screenshots** and kept explanations concise for a lab report.
+
+---
+
+# Bonus Task: DVWA Behind Nginx Reverse Proxy with HTTPS
+
+## 1. Reverse Proxy Deployment with Nginx
+
+To improve the architecture and security of the DVWA environment, the application was deployed behind an **Nginx reverse proxy**. In this setup, Nginx acts as an intermediary between the client (browser) and the DVWA container.
+
+Instead of users accessing the DVWA container directly, requests are first received by Nginx. The proxy then forwards these requests to the DVWA web server running inside another Docker container.
+
+The environment therefore follows this architecture:
+
+```
+Browser → Nginx Reverse Proxy → DVWA Container
+```
+
+This setup allows centralized traffic control and enables additional security features such as HTTPS encryption.
+
+---
+
+## 2. Nginx Reverse Proxy Configuration
+
+The reverse proxy was configured using the following **Nginx configuration file (`nginx.conf`)**.
+
+```
+events {}
+
+http {
+
+    server {
+        listen 80;
+
+        location / {
+            proxy_pass http://dvwa:80;
+        }
+    }
+
+    server {
+        listen 443 ssl;
+
+        ssl_certificate /etc/nginx/certs/dvwa.crt;
+        ssl_certificate_key /etc/nginx/certs/dvwa.key;
+
+        location / {
+            proxy_pass http://dvwa:80;
+        }
+    }
+
+}
+```
+
+### Configuration Explanation
+
+* `listen 80` allows Nginx to accept **HTTP traffic**.
+* `listen 443 ssl` enables **HTTPS communication** using SSL/TLS.
+* `proxy_pass http://dvwa:80` forwards incoming requests to the DVWA container running on port 80.
+* `ssl_certificate` and `ssl_certificate_key` define the **self-signed certificate** used for HTTPS encryption.
+
+---
+
+## 3. HTTPS Implementation with Self-Signed Certificate
+
+To enable encrypted communication, a **self-signed SSL certificate** was generated and mounted into the Nginx container.
+
+The certificate files used were:
+
+```
+dvwa.crt
+dvwa.key
+```
+
+These files were placed inside the Nginx container at:
+
+```
+/etc/nginx/certs
+```
+
+Once configured, Nginx was able to serve DVWA securely over **HTTPS (port 443)**.
+
+---
+
+## 4. Container Deployment Verification
+
+The following command was used to confirm that both containers were running correctly:
+
+```
+docker ps
+```
+
+This showed two active containers:
+
+* **dvwa** – running the vulnerable web application
+* **nginx-dvwa** – acting as the reverse proxy
+
+### Screenshot Placeholder
+
+```
+![Docker Containers Running](docker_ps.png)
+```
+
+---
+
+## 5. Accessing DVWA via HTTP
+
+After deployment, the DVWA login page was successfully accessed through HTTP using:
+
+```
+http://localhost
+```
+
+This request was received by Nginx and forwarded to the DVWA container.
+
+### Screenshot Placeholder
+
+```
+![DVWA HTTP Login Page](dvwa_http.png)
+```
+
+---
+
+## 6. Accessing DVWA via HTTPS
+
+DVWA was also accessed through HTTPS using:
+
+```
+https://localhost
+```
+
+Because a **self-signed certificate** was used, the browser displayed a warning indicating that the certificate authority is not trusted. After proceeding past the warning, the DVWA login page loaded successfully over an encrypted connection.
+
+### Screenshot Placeholder
+
+```
+![HTTPS Certificate Warning](https_warning.png)
+```
+
+```
+![DVWA HTTPS Login Page](dvwa_https.png)
+```
+
+---
+
+## 7. Difference Between HTTP and HTTPS Traffic
+
+| Feature           | HTTP                        | HTTPS                                  |
+| ----------------- | --------------------------- | -------------------------------------- |
+| Protocol          | HyperText Transfer Protocol | HyperText Transfer Protocol Secure     |
+| Encryption        | No encryption               | Uses SSL/TLS encryption                |
+| Data Transmission | Plain text                  | Encrypted                              |
+| Default Port      | 80                          | 443                                    |
+| Security          | Vulnerable to interception  | Protects confidentiality and integrity |
+
+### Explanation
+
+HTTP sends data between the browser and server in **plain text**, meaning attackers could intercept sensitive information such as login credentials. HTTPS adds a **TLS encryption layer**, which encrypts all transmitted data. This ensures that communication between the client and server remains secure and cannot be easily intercepted or modified.
+
+
 # Conclusion
 
 This comprehensive security assessment of the Damn Vulnerable Web Application (DVWA) has demonstrated the critical importance of implementing proper security controls throughout the software development lifecycle. Through systematic testing across Low, Medium, and High security levels, we have observed how inadequate input validation, weak authentication mechanisms, and insecure configurations can lead to severe vulnerabilities that compromise the confidentiality, integrity, and availability of web applications.
+
