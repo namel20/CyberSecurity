@@ -63,7 +63,7 @@ This controlled lab environment provided a safe and isolated platform for unders
 127.0.0.1; cat /etc/passwd
 ```
 - **Result:** Successfully executed `ping` on `127.0.0.1` and then displayed the contents of `/etc/passwd` (e.g., `root:x:0:0:root:/root:/bin/bash`, `daemon:x:1:1:daemon:/usr/sbin/nologin`, `mysql:x:101:101:MySQL Server...`).
-- ![Command Injection Low](dvwa-Security-Lab/screenshots/commandlow.png)
+- ![Command Injection Low](screenshots/commandlow.png)
 - **Explanation of why it worked:** 
   - No input sanitization or validation on the `ip` parameter
   - User input is directly concatenated into the system command (similar to `system("ping -c 4 $target");`)
@@ -77,7 +77,7 @@ This controlled lab environment provided a safe and isolated platform for unders
 127.0.0.1; cat /etc/passwd
 ```
 - **Result:** Only the `ping 127.0.0.1` output is shown; no `/etc/passwd` contents are displayed.
-- ![Command Injection Medium](dvwa-Security-Lab/screenshots/commandmed.png)
+- ![Command Injection Medium](screenshots/commandmed.png)
 - **Explanation of why it failed:**
   - Medium security filters or escapes dangerous shell metacharacters like `;`, `&&`, `|`, and `` ` ``
   - DVWA likely uses simple replacement (e.g., `str_replace(';', '', $target)`) or `escapeshellcmd()` on the input
@@ -87,7 +87,7 @@ This controlled lab environment provided a safe and isolated platform for unders
 #### High Security Level
 - **Payload Used:** Various injection attempts such as `127.0.0.1; cat /etc/passwd`, `127.0.0.1 && ls`, etc.
 - **Result:** Input that contains anything other than numbers and dots is rejected or sanitized so that only a valid IP (e.g., `127.0.0.1`) is ever sent to the system command; only normal `ping` output is shown.
-- ![Command Injection High](dvwa-Security-Lab/screenshots/commandhigh.png)
+- ![Command Injection High](screenshots/commandhigh.png)
 - **Explanation of why it failed:**
   - High security applies strict input validation, typically using a regex like `preg_match("/^[0-9\.]+$/", $target)`
   - The input must consist only of digits and dots (valid IP format), so any attempt to add shell metacharacters is blocked
@@ -103,7 +103,7 @@ This controlled lab environment provided a safe and isolated platform for unders
 ?page=../../../../etc/passwd
 ```
 - **Result:** The contents of the `/etc/passwd` system file were displayed on the webpage, confirming that the application allowed directory traversal and inclusion of sensitive system files outside the intended directory.
-- ![LFI Low](dvwa-Security-Lab/screenshots/LFI low.png)
+- ![LFI Low](screenshots/LFI low.png)
 - **Explanation of why it worked:**
   - At Low security, the application directly uses the `page` parameter in an `include()` call without validation or sanitization
   - Directory traversal sequences like `../../../../` allow navigation outside the web root/application directory
@@ -116,7 +116,7 @@ This controlled lab environment provided a safe and isolated platform for unders
 ?page=../../../../etc/passwd
 ```
 - **Result:** The attack failed and the application returned an error such as: `ERROR: File not found!`
-- ![LFI Medium](dvwa-Security-Lab/screenshots/LFI medium.png)
+- ![LFI Medium](screenshots/LFI medium.png)
 - **Explanation of why it failed:**
   - At Medium security, DVWA applies basic input filtering to block directory traversal attempts
   - The application removes or sanitizes `../` sequences from the `page` parameter before including the file
@@ -130,7 +130,7 @@ This controlled lab environment provided a safe and isolated platform for unders
 ?page=../../../../etc/passwd
 ```
 - **Result:** The attack was fully blocked; only predefined files within the application directory could be accessed, and `/etc/passwd` was never included.
-- ![LFI High](dvwa-Security-Lab/screenshots/LFI High.png)
+- ![LFI High](screenshots/LFI High.png)
 - **Explanation of why it failed:**
   - At High security, the application restricts file inclusion to a whitelist of allowed pages
   - Instead of directly passing user input to `include()`, it checks whether the requested `page` value is in the allowed list
@@ -147,7 +147,7 @@ This controlled lab environment provided a safe and isolated platform for unders
 1' OR '1'='1
 ```
 - **Result:** The query returned multiple user records including `admin`, `Gordon Brown`, `Hack Me`, `Pablo Picasso`, and `Bob Smith`, showing that all rows in the `users` table were retrieved.
-- ![SQL Injection Low](dvwa-Security-Lab/screenshots/sql2.png)
+- ![SQL Injection Low](screenshots/sql2.png)
 - **Explanation (why it worked):**
   - At Low security, the user input is inserted directly into the SQL query without validation or sanitization.
   - The backend query is similar to:  
@@ -163,7 +163,7 @@ This controlled lab environment provided a safe and isolated platform for unders
 1
 ```
 - **Result:** Only the record for user ID `1` (admin) is returned; the injection attempt does not execute.
-- ![SQL Injection Medium](dvwa-Security-Lab/screenshots/sql3.png)
+- ![SQL Injection Medium](screenshots/sql3.png)
 - **Explanation (why the attack was limited):**
   - Medium security applies basic input sanitization (e.g., `mysqli_real_escape_string()`), escaping special characters such as quotes.
   - Because the dangerous characters needed to break out of the query are escaped, the SQL statement stays syntactically correct and behaves as intended.
@@ -176,7 +176,7 @@ This controlled lab environment provided a safe and isolated platform for unders
 1' OR '1'='1
 ```
 - **Result:** The injection attempt fails and only legitimate user data is returned. The interface also requires the ID to be chosen from a controlled input rather than free text.
-- ![SQL Injection High](dvwa-Security-Lab/screenshots/sql4.png)
+- ![SQL Injection High](screenshots/sql4.png)
 - **Explanation (why it failed):**
   - At High security, stronger defenses are in place, such as restricting user input to a fixed list or enforcing strict server-side validation.
   - In many hardened implementations, prepared statements or parameterized queries are used so user input cannot change the structure of the SQL command.
@@ -192,7 +192,7 @@ This controlled lab environment provided a safe and isolated platform for unders
 /vulnerabilities/csrf/?password_new=password123&password_conf=password123&Change=Change
 ```
 - **Result:** The admin password was successfully changed and the message **“Password Changed.”** appeared.
-- ![CSRF Low](dvwa-Security-Lab/screenshots/CSRF1.png)
+- ![CSRF Low](screenshots/CSRF1.png)
 - **Explanation (why it worked):**
   - At Low security, there is no CSRF protection; the password change is accepted purely based on the session cookie.
   - The application processes a state-changing GET request without checking the origin, referrer, or any CSRF token.
@@ -205,7 +205,7 @@ This controlled lab environment provided a safe and isolated platform for unders
 /vulnerabilities/csrf/?password_new=password123&password_conf=password123&Change=Change
 ```
 - **Result:** The password change succeeds when the request is sent directly from the DVWA page.
-- ![CSRF Medium](dvwa-Security-Lab/screenshots/CSRF2.png)
+- ![CSRF Medium](screenshots/CSRF2.png)
 - **Explanation (why the attack was limited):**
   - Medium security introduces a basic defense by checking the HTTP `Referer` header to confirm that the request originates from the DVWA application.
   - Requests initiated from the DVWA form include a valid `Referer`, so the password change is allowed.
@@ -218,7 +218,7 @@ This controlled lab environment provided a safe and isolated platform for unders
 /vulnerabilities/csrf/?password_new=password123&password_conf=password123&Change=Change
 ```
 - **Result:** The password change request fails unless a valid CSRF token is included.
-- ![CSRF High](dvwa-Security-Lab/screenshots/CSRF3.png)
+- ![CSRF High](screenshots/CSRF3.png)
 - **Explanation (why it failed):**
   - At High security, DVWA uses a per-request CSRF token embedded in the password change form.
   - The server verifies that the submitted token matches the one stored for the user’s session before applying the change.
@@ -234,7 +234,7 @@ This controlled lab environment provided a safe and isolated platform for unders
 <?php echo "File upload vulnerability exploited!"; ?>
 ```
 - **Result:** The malicious PHP file was successfully uploaded and executed from the server directory, demonstrating remote code execution.
-- ![File Upload Low](dvwa-Security-Lab/screenshots/uploadlow.png)
+- ![File Upload Low](screenshots/uploadlow.png)
 - **Explanation (why it worked):**
   - At Low security, the application does **not** validate file types or extensions.
   - The server accepts `.php` files and stores them in a web-accessible uploads directory.
@@ -247,7 +247,7 @@ This controlled lab environment provided a safe and isolated platform for unders
 shell.php.jpg
 ```
 - **Result:** The file upload was accepted and stored in the server uploads directory.
-- ![File Upload Medium](dvwa-Security-Lab/screenshots/uploadmed.png)
+- ![File Upload Medium](screenshots/uploadmed.png)
 - **Explanation (why the attack still works):**
   - Medium security introduces simple extension checks, but only inspects the **last** extension in the filename.
   - By renaming the payload to `shell.php.jpg`, the application treats it as an image while the content is still PHP.
@@ -260,7 +260,7 @@ shell.php.jpg
 shell.php
 ```
 - **Result:** The upload attempt was rejected; only legitimate image files are accepted.
-- ![File Upload High](dvwa-Security-Lab/screenshots/uploadhigh.png)
+- ![File Upload High](screenshots/uploadhigh.png)
 - **Explanation (why it failed):**
   - High security enforces stricter checks on both file extension and content (MIME type).
   - Only specific image formats (such as `.jpg` and `.png`) are allowed, and files containing PHP code are rejected.
@@ -276,7 +276,7 @@ shell.php
 1' AND 1=1 #
 ```
 - **Result:** The application returned the message **“User ID exists in the database.”**, confirming that the injected condition evaluated to true.
-- ![Blind SQLi Low](dvwa-Security-Lab/screenshots/blindlow.png)
+- ![Blind SQLi Low](screenshots/blindlow.png)
 - **Explanation (why it worked):**
   - At Low security, user input is inserted directly into the SQL query without validation or sanitization.
   - By adding a logical condition such as `1' AND 1=1 #`, the attacker can influence the `WHERE` clause and observe whether the application reports success or failure.
@@ -289,7 +289,7 @@ shell.php
 1
 ```
 - **Result:** The application returns “User ID exists in the database.” only for valid IDs chosen via the interface.
-- ![Blind SQLi Medium](dvwa-Security-Lab/screenshots/blindmed.png)
+- ![Blind SQLi Medium](screenshots/blindmed.png)
 - **Explanation (why the attack was limited):**
   - Medium security constrains input using form controls (such as a dropdown) and applies basic sanitization.
   - Because the user cannot freely type arbitrary payloads, it is much harder to inject additional SQL operators or comments.
@@ -302,7 +302,7 @@ shell.php
 1
 ```
 - **Result:** The page still reports “User ID exists in the database.” for valid selections, but the underlying query cannot be manipulated.
-- ![Blind SQLi High](dvwa-Security-Lab/screenshots/blindhigh.png)
+- ![Blind SQLi High](screenshots/blindhigh.png)
 - **Explanation (why it failed):**
   - High security combines strict input handling with stronger server-side protections (for example, parameterized queries).
   - The ID is taken only from controlled UI elements and bound as a parameter, so additional SQL operators cannot be injected.
@@ -317,7 +317,7 @@ shell.php
   - `dvwaSession = 1`  
   - `dvwaSession = 2`  
   - `dvwaSession = 3`
-- ![Weak Session IDs Low](dvwa-Security-Lab/screenshots/weaklow.png)
+- ![Weak Session IDs Low](screenshots/weaklow.png)
 - **Explanation (why it worked):**
   - At the Low security level, the application generates session identifiers using sequential numeric values.
   - Since these values follow a clear pattern, attackers can easily predict the next valid session ID and potentially hijack another user’s session.
@@ -328,7 +328,7 @@ shell.php
 - **Payload Used:** Click the **Generate** button to create new session cookies.
 - **Result:** Session identifiers appear as large numeric values related to timestamps, for example:  
   - `dvwaSession = 1772742600`
-- ![Weak Session IDs Medium](dvwa-Security-Lab/screenshots/weakmed.png)
+- ![Weak Session IDs Medium](screenshots/weakmed.png)
 - **Explanation (why it worked):**
   - At the Medium security level, session IDs are generated using timestamp-based values.
   - Although this approach removes the simple sequential pattern, the identifiers are still predictable because they are based on the current time; an attacker could estimate when the session was created and guess nearby values.
@@ -339,7 +339,7 @@ shell.php
 - **Payload Used:** Click the **Generate** button to generate session cookies.
 - **Result:** Session IDs still appear as numeric values similar to timestamps, for example:  
   - `dvwaSession = 1772742648`
-- ![Weak Session IDs High](dvwa-Security-Lab/screenshots/weakhigh.png)
+- ![Weak Session IDs High](screenshots/weakhigh.png)
 - **Explanation (why it worked):**
   - Even at the High security level in DVWA, session identifiers are derived from time-based values.
   - Because timestamps can be approximated within a small time window, attackers may still attempt to guess nearby session IDs.
@@ -357,7 +357,7 @@ shell.php
 <script>alert('XSS')</script>
 ```
 - **Result:** JavaScript executed and an alert popup with **“XSS”** appeared in the browser.
-- ![DOM XSS Low](dvwa-Security-Lab/screenshots/xsslow.png)
+- ![DOM XSS Low](screenshots/xsslow.png)
 - **Explanation (why it worked):**
   - At Low security, the application reads the `default` parameter from the URL and writes it into the page using JavaScript without validation or sanitization.
   - Because this untrusted value is inserted directly into the DOM, the injected `<script>` tag executes in the victim’s browser.
@@ -370,7 +370,7 @@ shell.php
 <script>alert('XSS')</script>
 ```
 - **Result:** The payload did not execute and no alert appeared; the page loaded normally.
-- ![DOM XSS Medium](dvwa-Security-Lab/screenshots/xssmed.png)
+- ![DOM XSS Medium](screenshots/xssmed.png)
 - **Explanation (why it failed):**
   - Medium security introduces simple input filtering and restricts the allowed values for the `default` parameter (typically limiting it to predefined language options).
   - Because only known-safe values are accepted, injected script tags are rejected and never written into the DOM.
@@ -383,7 +383,7 @@ shell.php
 <script>alert('XSS')</script>
 ```
 - **Result:** The payload did not execute and the page remained unchanged.
-- ![DOM XSS High](dvwa-Security-Lab/screenshots/xsshigh.png)
+- ![DOM XSS High](screenshots/xsshigh.png)
 - **Explanation (why it failed):**
   - At High security, stronger validation is applied to the `default` parameter and only legitimate values are processed.
   - The application avoids inserting untrusted data into dangerous JavaScript sinks, effectively blocking DOM-based XSS.
@@ -399,7 +399,7 @@ shell.php
 <script>alert('XSS')</script>
 ```
 - **Result:** A JavaScript alert popup appeared in the browser.
-- ![Reflected XSS Low](dvwa-Security-Lab/screenshots/reflectedlow.png)
+- ![Reflected XSS Low](screenshots/reflectedlow.png)
 - **Explanation (why it worked):**
   - At Low security, user input from the name parameter is reflected directly into the webpage without sanitization.
   - The browser receives the injected `<script>` tag as part of the HTML and executes it.
@@ -412,7 +412,7 @@ shell.php
 <img src=x onerror=alert('XSS')>
 ```
 - **Result:** The alert popup still appears.
-- ![Reflected XSS Medium](dvwa-Security-Lab/screenshots/reflectedmed.png)
+- ![Reflected XSS Medium](screenshots/reflectedmed.png)
 - **Explanation (why it worked):**
   - Medium security filters or blocks basic `<script>` tags but does not properly sanitize event handlers such as `onerror`.
   - By using an `<img>` tag with a broken `src` and an `onerror` handler, the attacker can still execute JavaScript when the image fails to load.
@@ -425,7 +425,7 @@ shell.php
 <script>alert('XSS')</script>
 ```
 - **Result:** No alert popup appears and the page loads normally.
-- ![Reflected XSS High](dvwa-Security-Lab/screenshots/reflectedhigh.png)
+- ![Reflected XSS High](screenshots/reflectedhigh.png)
 - **Explanation (why it failed):**
   - At High security, the application applies stronger input validation and output encoding.
   - Special characters and HTML/script content are sanitized or encoded before being rendered in the response.
@@ -441,7 +441,7 @@ shell.php
 <script>alert('XSS')</script>
 ```
 - **Result:** An alert popup appears after submitting the message and whenever the page reloads.
-- ![Stored XSS Low](dvwa-Security-Lab/screenshots/storedlow.png)
+- ![Stored XSS Low](screenshots/storedlow.png)
 - **Explanation (why it worked):**
   - At Low security, user input is stored in the database and later rendered on the page without sanitization or encoding.
   - When the guestbook or comment page is loaded, the stored `<script>` tag is output as HTML and executed by the browser.
@@ -454,7 +454,7 @@ shell.php
 <img src=x onerror=alert('XSS')>
 ```
 - **Result:** The alert popup appears when the stored message loads.
-- ![Stored XSS Medium](dvwa-Security-Lab/screenshots/storedmed.png)
+- ![Stored XSS Medium](screenshots/storedmed.png)
 - **Explanation (why it worked):**
   - Medium security filters `<script>` tags but does not block event handlers such as `onerror` on other HTML elements.
   - The malicious `<img>` tag is stored in the database and rendered back to the page as-is.
@@ -467,7 +467,7 @@ shell.php
 <img src=x onerror=alert('XSS')>
 ```
 - **Result:** The alert popup still appears when the page loads.
-- ![Stored XSS High](dvwa-Security-Lab/screenshots/storedhigh.png)
+- ![Stored XSS High](screenshots/storedhigh.png)
 - **Explanation (why protection failed):**
   - Although High security applies stronger filtering, it still does not fully sanitize or encode stored content before displaying it.
   - The malicious HTML with the `onerror` handler is saved in the database and later rendered in the page, so the browser continues to execute the JavaScript.
@@ -480,7 +480,7 @@ shell.php
 - **Payload Used:**  
   `alert("CSP Bypass")`
 - **Result:** A browser alert box displaying **“CSP Bypass”** appeared, confirming that the JavaScript executed successfully.
-- ![CSP Bypass Low](dvwa-Security-Lab/screenshots/bypasslow.png)
+- ![CSP Bypass Low](screenshots/bypasslow.png)
 - **Explanation (why it worked):**
   - At the Low security level, the Content Security Policy configuration is very permissive.
   - The application allows scripts from user-controlled or external sources without strict restrictions, so the injected JavaScript is executed directly by the browser.
@@ -491,7 +491,7 @@ shell.php
 - **Payload Used:**  
   `https://code.jquery.com/jquery-3.6.0.min.js`
 - **Result:** The external JavaScript file was successfully loaded and executed within the page.
-- ![CSP Bypass Medium](dvwa-Security-Lab/screenshots/bypassmed.png)
+- ![CSP Bypass Medium](screenshots/bypassmed.png)
 - **Explanation (why it worked):**
   - At the Medium security level, the CSP policy restricts some script sources but still allows scripts from certain trusted domains, such as common CDNs.
   - By providing a script URL from one of these allowed domains, the browser accepts and loads the script, showing that the policy can still be bypassed through whitelisted sources.
@@ -502,7 +502,7 @@ shell.php
 - **Payload Used:**  
   `../vulnerabilities/csp/source/jsonp.php`
 - **Result:** The application successfully executed JavaScript by loading code through the JSONP endpoint on the same server.
-- ![CSP Bypass High](dvwa-Security-Lab/screenshots/bypasshigh.png)
+- ![CSP Bypass High](screenshots/bypasshigh.png)
 - **Explanation (why it worked):**
   - At the High security level, the CSP policy blocks external scripts but still allows scripts from the same domain.
   - By referencing a JSONP endpoint hosted on the same server, the attacker can cause the application to return and execute attacker-influenced JavaScript while still complying with the CSP rules.
@@ -520,7 +520,7 @@ shell.php
 success
 ```
 - **Result:** The application returned **“Invalid token.”**
-- ![JavaScript Low](dvwa-Security-Lab/screenshots/jslow.png)
+- ![JavaScript Low](screenshots/jslow.png)
 - **Explanation (why it failed):**
   - At Low security, validation is performed through client-side JavaScript. The page expects a token that is generated from the phrase before submission.
   - Because the correct token was not generated by the client-side script (e.g., the user only entered the phrase without triggering token generation), the server rejected the request.
@@ -533,7 +533,7 @@ success
 success
 ```
 - **Result:** The application returned **“Well done!”**
-- ![JavaScript Medium](dvwa-Security-Lab/screenshots/jsmed.png)
+- ![JavaScript Medium](screenshots/jsmed.png)
 - **Explanation (why it worked):**
   - At Medium security, the JavaScript generates a token using logic such as `reverse("XX" + phrase + "XX")`.
   - For the phrase `success`, the generated token becomes `XXsseccusXX`.
@@ -547,7 +547,7 @@ success
 success
 ```
 - **Result:** The application returned **“Invalid token.”**
-- ![JavaScript High](dvwa-Security-Lab/screenshots/jshigh.png)
+- ![JavaScript High](screenshots/jshigh.png)
 - **Explanation (why it failed):**
   - At High security, the application generates a hashed token using JavaScript before submission. The token is stored in a hidden field and must match the expected server-side value.
   - Simply entering the phrase `success` without the correct token (computed by the hashing function in the client script) results in an invalid submission.
@@ -560,7 +560,7 @@ success
   - Original: `<input type="hidden" name="step" value="1">`
   - Modified request: `step=2`
 - **Result:** The password was successfully updated **without** solving the CAPTCHA challenge.
-- ![Insecure CAPTCHA Low](dvwa-Security-Lab/screenshots/captchalow.png)
+- ![Insecure CAPTCHA Low](screenshots/captchalow.png)
 - **Explanation (why it worked):**
   - At Low security, CAPTCHA verification is split into two stages controlled by a `step` parameter.
   - The server checks only whether `step=2`, but does **not** verify that the CAPTCHA from step 1 was actually solved.
@@ -573,7 +573,7 @@ success
   - `step=2`
   - `passed_captcha=true`
 - **Result:** The password was changed successfully without solving the CAPTCHA.
-- ![Insecure CAPTCHA Medium](dvwa-Security-Lab/screenshots/captchamed.png)
+- ![Insecure CAPTCHA Medium](screenshots/captchamed.png)
 - **Explanation (why it worked):**
   - Medium security introduces a `passed_captcha` flag intended to track whether the CAPTCHA was solved.
   - However, this flag is still supplied by the client and is not robustly validated server-side.
@@ -586,7 +586,7 @@ success
   - `g-recaptcha-response=hidd3n_valu3`
   - `User-Agent: reCAPTCHA`
 - **Result:** The password was changed successfully even though the CAPTCHA challenge was not solved.
-- ![Insecure CAPTCHA High](dvwa-Security-Lab/screenshots/captchahigh.png)
+- ![Insecure CAPTCHA High](screenshots/captchahigh.png)
 - **Explanation (why it worked / why protection failed):**
   - High security attempts to strengthen validation by checking the CAPTCHA response and some request headers.
   - Due to leftover development logic, the server contains a hidden condition that accepts the special value `hidd3n_valu3` when the request has `User-Agent: reCAPTCHA`.
@@ -601,7 +601,7 @@ success
   - **Password:** `randompassword`
 - **Result:** Login was successfully bypassed. The application displayed:  
   `Welcome to the password protected area admin' OR '1'='1` and granted access to the protected page.
-- ![Brute Force Low](dvwa-Security-Lab/screenshots/brutelow.png)
+- ![Brute Force Low](screenshots/brutelow.png)
 - **Explanation (why it worked):**
   - At Low security, user input is inserted directly into the SQL query without filtering or validation.
   - The payload `admin' OR '1'='1` injects a condition that always evaluates to true in the `WHERE` clause.
@@ -613,7 +613,7 @@ success
   - **Password:** `test`
 - **Result:** The injection attempt fails and the application returns:  
   `Username and/or password incorrect.`
-- ![Brute Force Medium](dvwa-Security-Lab/screenshots/brutemed.png)
+- ![Brute Force Medium](screenshots/brutemed.png)
 - **Explanation (why it worked at lower level but not here):**
   - Under Low security, the authentication query is built by directly concatenating unsanitized username and password into the SQL.
   - At Medium security, the application starts sanitizing input, for example using `mysql_real_escape_string` or similar escaping.
@@ -625,7 +625,7 @@ success
   - **Password:** `test`
 - **Result:** The login attempt still fails and the application again returns:  
   `Username and/or password incorrect.`
-- ![Brute Force High](dvwa-Security-Lab/screenshots/brutehigh.png)
+- ![Brute Force High](screenshots/brutehigh.png)
 - **Explanation (why it failed at high security):**
   - At High security, stronger defensive measures are applied, such as stricter input validation and use of parameterized queries.
   - User-supplied data is bound as parameters instead of being concatenated into the SQL string, so injected fragments like `OR '1'='1` are treated as data, not executable SQL.
@@ -725,10 +725,10 @@ The screenshots (listed below) demonstrate Docker isolation in several ways.
 
 ### Environment Screenshots
 
-- `![Docker /var/www/html listing](dvwa-Security-Lab/screenshots/new1.png)`
-- `![Docker logs and services](dvwa-Security-Lab/screenshots/new2.png)`
-- `![Docker containers / port mapping](dvwa-Security-Lab/screenshots/new3.png)`
-- `![Container shell view](dvwa-Security-Lab/screenshots/new4.png)`
+- `![Docker /var/www/html listing](screenshots/new1.png)`
+- `![Docker logs and services](screenshots/new2.png)`
+- `![Docker containers / port mapping](screenshots/new3.png)`
+- `![Container shell view](screenshots/new4.png)`
 ---
 
 ## Security Analysis Questions
@@ -900,7 +900,7 @@ This showed two active containers:
 
 
 ```
-![Docker Containers Running](dvwa-Security-Lab/screenshots/docker_ps.png)
+![Docker Containers Running](screenshots/docker_ps.png)
 ```
 
 ---
@@ -916,7 +916,7 @@ http://localhost
 This request was received by Nginx and forwarded to the DVWA container.
 
 
-![DVWA HTTP Login Page](dvwa-Security-Lab/screenshots/dvwa_http.png)
+![DVWA HTTP Login Page](screenshots/dvwa_http.png)
 ---
 
 ## 6. Accessing DVWA via HTTPS
@@ -930,9 +930,9 @@ https://localhost
 Because a **self-signed certificate** was used, the browser displayed a warning indicating that the certificate authority is not trusted. After proceeding past the warning, the DVWA login page loaded successfully over an encrypted connection.
 
 
-- ![HTTPS Certificate Warning](dvwa-Security-Lab/screenshots/https_warning.png)
+- ![HTTPS Certificate Warning](screenshots/https_warning.png)
 
-- ![DVWA HTTPS Login Page](dvwa-Security-Lab/screenshots/dvwa_https.png)
+- ![DVWA HTTPS Login Page](screenshots/dvwa_https.png)
 
 
 ---
