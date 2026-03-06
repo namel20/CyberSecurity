@@ -1,5 +1,68 @@
 ## DVWA Security Lab Report
 
+Here's a concise **Environment Setup Description** you can place right after your lab heading:
+
+---
+
+## Environment Setup Description
+
+The Damn Vulnerable Web Application (DVWA) was deployed using Docker containerization technology to create an isolated and reproducible testing environment. The setup followed these specifications:
+
+### Lab Environment Configuration
+
+| Component | Specification |
+|-----------|---------------|
+| **Platform** | Docker Container |
+| **Base Image** | vulnerables/web-dvwa |
+| **Host Access** | http://localhost:8080 |
+| **Default Credentials** | admin / password |
+
+### Deployment Process
+
+The DVWA environment was initialized using the following Docker command:
+
+```bash
+docker run -d -p 8080:80 --name dvwa vulnerables/web-dvwa
+```
+
+This command:
+- Pulls the official DVWA Docker image
+- Maps port `8080` on the host to port `80` inside the container
+- Creates an isolated container named `dvwa`
+- Runs the container in detached mode (`-d`)
+
+### Environment Verification
+
+After deployment, the following steps were performed to verify proper configuration:
+
+1. **Container Status Check**
+   ```bash
+   docker ps
+   ```
+   Confirmed the container was running with the correct port mapping.
+
+2. **Database Setup**
+   - Navigated to `http://localhost:8080/setup.php`
+   - Clicked "Create/Reset Database" to initialize the MySQL database
+   - Verified all tables were created successfully
+
+3. **Security Level Configuration**
+   - Logged into DVWA using default credentials (`admin/password`)
+   - Accessed the DVWA Security page
+   - Systematically tested each vulnerability at Low, Medium, and High security levels
+
+### Testing Methodology
+
+For each vulnerability module, a consistent testing approach was followed:
+
+1. **Reconnaissance** - Analyzed the application's behavior and request/response patterns
+2. **Payload Development** - Crafted appropriate attack payloads for each vulnerability type
+3. **Execution** - Submitted payloads at each security level
+4. **Observation** - Documented successful attacks and failures
+5. **Analysis** - Determined the underlying security controls that enabled or prevented exploitation
+
+This controlled lab environment provided a safe and isolated platform for understanding real-world web application vulnerabilities without risking production systems.
+
 ### Vulnerability 1: Command Injection
 **Module:** Command Injection
 
@@ -862,9 +925,7 @@ http://localhost
 
 This request was received by Nginx and forwarded to the DVWA container.
 
-```
 ![DVWA HTTP Login Page](dvwa-Security-Lab/screenshots/dvwa_http.png)
-```
 
 ---
 
@@ -878,14 +939,9 @@ https://localhost
 
 Because a **self-signed certificate** was used, the browser displayed a warning indicating that the certificate authority is not trusted. After proceeding past the warning, the DVWA login page loaded successfully over an encrypted connection.
 
-
-```
 ![HTTPS Certificate Warning](dvwa-Security-Lab/screenshots/https_warning.png)
-```
 
-```
 ![DVWA HTTPS Login Page](dvwa-Security-Lab/screenshots/dvwa_https.png)
-```
 
 ---
 
