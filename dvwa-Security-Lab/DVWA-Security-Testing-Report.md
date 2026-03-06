@@ -929,7 +929,7 @@ Because a **self-signed certificate** was used, the browser displayed a warning 
 
 
 - ![HTTPS Certificate Warning](screenshots/https_warning.png)
-- ![DVWA HTTPS Login Page](screenshots/dvwa_https.png)
+- ![DVWA HTTPS Login Page](screenshots/image.png)
 
 
 ---
