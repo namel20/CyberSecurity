@@ -51,16 +51,6 @@ After deployment, the following steps were performed to verify proper configurat
    - Accessed the DVWA Security page
    - Systematically tested each vulnerability at Low, Medium, and High security levels
 
-### Testing Methodology
-
-For each vulnerability module, a consistent testing approach was followed:
-
-1. **Reconnaissance** - Analyzed the application's behavior and request/response patterns
-2. **Payload Development** - Crafted appropriate attack payloads for each vulnerability type
-3. **Execution** - Submitted payloads at each security level
-4. **Observation** - Documented successful attacks and failures
-5. **Analysis** - Determined the underlying security controls that enabled or prevented exploitation
-
 This controlled lab environment provided a safe and isolated platform for understanding real-world web application vulnerabilities without risking production systems.
 
 ### Vulnerability 1: Command Injection
@@ -925,8 +915,8 @@ http://localhost
 
 This request was received by Nginx and forwarded to the DVWA container.
 
-![DVWA HTTP Login Page](dvwa-Security-Lab/screenshots/dvwa_http.png)
 
+![DVWA HTTP Login Page](dvwa-Security-Lab/screenshots/dvwa_http.png)
 ---
 
 ## 6. Accessing DVWA via HTTPS
@@ -939,9 +929,11 @@ https://localhost
 
 Because a **self-signed certificate** was used, the browser displayed a warning indicating that the certificate authority is not trusted. After proceeding past the warning, the DVWA login page loaded successfully over an encrypted connection.
 
-![HTTPS Certificate Warning](dvwa-Security-Lab/screenshots/https_warning.png)
 
-![DVWA HTTPS Login Page](dvwa-Security-Lab/screenshots/dvwa_https.png)
+- ![HTTPS Certificate Warning](dvwa-Security-Lab/screenshots/https_warning.png)
+
+- ![DVWA HTTPS Login Page](dvwa-Security-Lab/screenshots/dvwa_https.png)
+
 
 ---
 
